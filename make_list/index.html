@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>d3test</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <p id="list"></p>
+<script type="text/javascript">
+  // ひらがなのコードポイントの10進数表示
+  var skip = [12353, 12355, 12357, 12359, 12361, 12364, 12366, 12368, 12370, 12372, 12374, 12376, 12378, 12380, 12382, 12384, 12386, 12387, 12389, 12391, 12393, 12400, 12401, 12403, 12404, 12406, 12407, 12409, 12410, 12412, 12413, 12419, 12421, 12423, 12430];
+  var tmpList = []
+  for (var i = 0; i < skip.length; i++) {
+    tmpList[i] = skip[i] + 96;
+  }
+  skip = skip.concat(tmpList);
+
+  function Nodes(first, last, group, level) {
+  	var first = first.charCodeAt(0);
+  	var last = last.charCodeAt(0);
+    for(var i = first; i <= last; i++) {
+      if (skip.includes(i)) {
+        continue;
+      }
+      graph.nodes.push({"id": String.fromCodePoint(i), "group": group, "level": level});
+    }
+    return;
+  }
+  function Links(first1, last1, first2, last2, type) {
+    if (type == "s1tn") {
+      var first2 = first2.charCodeAt(0);
+      var last2 = last2.charCodeAt(0);
+
+      for(var i = first2; i <= last2; i++) {
+        if (skip.includes(i)) {
+          continue;
+        }
+        graph.links.push({"source": first1, "target": String.fromCodePoint(i)});
+      }
+    }
+    else {
+      // sntn
+      var first1 = first1.charCodeAt(0);
+      var last1 = last1.charCodeAt(0);
+
+      var first2 = first2.charCodeAt(0);
+      var last2 = last2.charCodeAt(0);
+      for(var i = first1; i <= last1; i++) {
+        if (skip.includes(i)) {
+          continue;
+        }
+        graph.links.push({"source": String.fromCodePoint(i), "target": String.fromCodePoint(i+first2-first1)});
+
+      }
+
+    }
+    return;
+  }
+
+  function PushNodes(list, group, level) {
+    for(var i = 0; i < list.length; i++) {
+      graph.nodes.push({"id": list[i], "group": group, "level": level});
+    }
+    return;
+  }
+  function PushLinks(list) {
+    for(var i = 0; i < list.length; i++) {
+      graph.links.push({"source": list[i][0], "target": list[i][1]});
+    }
+    return;
+  }
+  function PushLinksS1(source, targetList) {
+    for(var i = 0; i < targetList.length; i++) {
+      graph.links.push({"source": source, "target": targetList[i]});
+    }
+    return;
+  }
+  function PushLinksSTList(sourceList, targetList) {
+    for(var i = 0; i < targetList.length; i++) {
+      graph.links.push({"source": sourceList[i], "target": targetList[i]});
+    }
+    return;
+  }
+
+  var graph = {"nodes": [], "links": []};
+
+  graph.nodes.push({"id": "ひらがな", "group": 1, "level": 3});
+  Links("ひらがな", "ひらがな", "あ", "ん", "s1tn");
+  Nodes("あ", "ん", 1, 1);
+
+  Links("あ", "ん", "ア", "ン", "sntn");
+
+  graph.nodes.push({"id": "カタカナ", "group": 2, "level": 3});
+  Links("カタカナ", "カタカナ", "ア", "ン", "s1tn");
+  Nodes("ア", "ン", 2, 1);
+
+  graph.nodes.push({"id": "number", "group": 8, "level": 3});
+  Links("number", "number", "0", "9", "s1tn");
+  Nodes("0", "9", 8, 1);
+
+  var numberNodesList = ["10", "11", "12", "50", "100", "500", "1000", "10000", "10^8", "10^12", "10^16", "0.1", "0.01", "0.001", "0.0001"];
+  PushNodes(numberNodesList, 8, 1);
+  PushLinksS1("number", numberNodesList);
+
+  Links("Ⅰ", "Ⅿ", "ⅰ", "ⅿ", "sntn");
+  Nodes("Ⅰ", "Ⅿ", 9, 1);
+  Nodes("ⅰ", "ⅿ", 10, 1);
+
+  Links("1", "9", "Ⅰ", "Ⅸ", "sntn");
+  var romanNumeralsLinksList = [["10", "Ⅹ"], ["11", "Ⅺ"], ["12", "Ⅻ"], ["50", "Ⅼ"], ["100", "Ⅽ"], ["500", "Ⅾ"], ["1000", "Ⅿ"]];
+  PushLinks(romanNumeralsLinksList);
+
+  graph.nodes.push({"id": "alphabet", "group": 5, "level": 3});
+  Links("alphabet", "alphabet", "A", "Z", "s1tn");
+  Links("A", "Z", "a", "z", "sntn");
+  Nodes("A", "Z", 5, 1);
+  Nodes("a", "z", 6, 1);
+
+  var englishNodesList = ["bee", "sea", "eye", "tea", "you", "why", "before", "b4", "wait", "w8", "l8r", "later", "meet", "meat", "week", "weak", "sun", "son", "mail", "male", "peace", "piece", "right", "write", "knight", "night", "sauce", "source", "tail", "tale"];
+  PushNodes(englishNodesList, 7, 1)
+  Links("alphabet", "alphabet", "α", "ω", "s1tn");
+  Nodes("α", "ω", 12, 1);
+
+  var kanjiNodesList = ["〇", "零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "百", "千", "万", "億", "兆", "京", "分", "厘", "毛", "糸", "了", "佑", "仁", "伝", "化", "仏", "穴", "空", "工", "功", "才", "力", "加", "竹", "⼄", "𠆢", "今", "又", "口", "山", "区", "回", "国", "困", "因", "目", "自", "甘", "田", "由", "甲", "皿", "⽤", "⾅", "鳥", "烏", "血", "東", "西", "南", "北", "江", "汐", "沿", "名", "夕", "外", "占", "左", "右", "花", "元", "公", "比", "予", "台", "刈", "只", "兄", "品", "茶", "黒", "白", "紅", "紺", "灰", "銀", "朱", "桃"];
+  var bushuNodesList = ["亻", "宀", "⼌", "⼇", "⼉", "⼍", "⼎", "⼐", "刂", "⼕", "⼘", "⼔", "⼛", "⼞", "⺍", "艹", "⻖", "氵", "⺫", "礻", "⺮", "龴", "㐅"];
+  graph.nodes.push({"id": "漢字", "group": 3, "level": 3});
+  PushNodes(kanjiNodesList, 3, 1);
+  PushNodes(bushuNodesList, 4, 1);
+  PushLinksS1("漢字", kanjiNodesList);
+  PushLinksS1("漢字", bushuNodesList);
+
+  var symbolNodesList = ["!", "?", "○", "ー", "-", "_", "/", "+", "*", "^", "=", "\"", "゛", "゜", "%", "#", "♭"];
+  graph.nodes.push({"id": "symbol", "group": 11, "level": 3});
+  PushNodes(symbolNodesList, 11, 1);
+  PushLinksS1("symbol", symbolNodesList);
+
+  var allLinksList = [["〇", "0"], ["〇", "零"], ["零", "0"], ["一", "1"], ["二", "2"], ["三", "3"], ["四", "4"], ["五", "5"], ["六", "6"], ["七", "7"], ["八", "8"], ["九", "9"], ["十", "10"], ["百", "100"], ["千", "1000"], ["万", "10000"], ["億", "10^8"], ["兆", "10^12"], ["京", "10^16"], ["分", "0.1"], ["厘", "0.01"], ["毛", "0.001"], ["糸", "0.0001"], ["〇", "零"], ["〇", "○"], ["〇", "O"], ["〇", "o"], ["0", "O"], ["0", "o"], ["一", "ー"], ["二", "ニ"], ["二", "="], ["ニ", "="], ["=", "11"], ["=", "Ⅱ"], ["Ⅱ", "11"], ["2", "て"], ["2", "歩行者用信号機"], ["3", "車両用信号機"], ["歩行者用信号機", "赤"], ["歩行者用信号機", "青"], ["車両用信号機", "赤"], ["車両用信号機", "青"], ["車両用信号機", "黄"], ["4", "四季"], ["5", "指"], ["6", "サイコロ"], ["7", "虹"], ["7", "曜日"], ["8", "太陽系惑星"]];
+  PushLinks(allLinksList);
+
+  var allLv2NodesList = ["歩行者用信号機", "車両用信号機"];
+  PushNodes(allLv2NodesList, 13, 2);
+
+  graph.nodes.push({"id": "四季", "group": 13, "level": 2});
+  var seasonNodesList = ["春", "夏", "秋", "冬"];
+  var seasonEngNodesList = ["Spring", "Summer", "Autumn", "Winter"];
+  PushNodes(seasonNodesList, 3, 1);
+  PushNodes(seasonEngNodesList, 7, 1);
+  PushLinksS1("四季", seasonNodesList);
+  PushLinksSTList(seasonNodesList, seasonEngNodesList);
+
+  graph.nodes.push({"id": "指", "group": 3, "level": 2});
+  var fingerNodesList = ["親指", "人差し指", "中指", "薬指", "小指"];
+  var fingerFamNodesList = ["お父さん指", "お母さん指", "お兄さん指", "お姉さん指", "赤ちゃん指"];
+  PushNodes(fingerNodesList, 3, 1);
+  PushNodes(fingerFamNodesList, 7, 1);
+  PushLinksS1("指", fingerNodesList);
+  PushLinksSTList(fingerNodesList, fingerFamNodesList);
+
+  graph.nodes.push({"id": "サイコロ", "group": 13, "level": 2});
+  Links("サイコロ", "サイコロ", "⚀", "⚅", "s1tn");
+  Links("1", "6", "⚀", "⚅", "sntn");
+  Nodes("⚀", "⚅", 11, 1);
+
+  graph.nodes.push({"id": "虹", "group": 3, "level": 2});
+  var rainbowNodesList = ["赤", "橙", "黄", "緑", "青", "藍", "紫"];
+  var rainbowEngNodesList = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+  PushNodes(rainbowNodesList, 3, 1);
+  PushNodes(rainbowEngNodesList, 7, 1);
+  PushLinksS1("虹", rainbowNodesList);
+  PushLinksSTList(rainbowNodesList, rainbowEngNodesList);
+
+
+  graph.nodes.push({"id": "曜日", "group": 13, "level": 2});
+  var youbiNodesList = ["月", "火", "水", "木", "金", "土", "日"];
+  var youbiEngNodesList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  PushNodes(youbiNodesList, 3, 1);
+  PushNodes(youbiEngNodesList, 7, 1);
+  PushLinksS1("曜日", youbiNodesList);
+  PushLinksSTList(youbiNodesList, youbiEngNodesList);
+
+  graph.nodes.push({"id": "太陽系惑星", "group": 13, "level": 2});
+  var planetNodesList = ["水星", "金星", "地球", "火星", "木星", "土星", "天王星", "海王星"];
+  var planetEngNodesList = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"];
+  PushNodes(planetNodesList, 13, 1);
+  PushNodes(planetEngNodesList, 7, 1);
+  PushLinksS1("太陽系惑星", planetNodesList);
+  PushLinksSTList(planetNodesList, planetEngNodesList);
+
+
+  graph.nodes.push({"id": "地図記号", "group": 13, "level": 2});
+  var chizuNodesList = ["⭘", "⭗", "⭙", "☓"];
+  var chizuImiNodesList = ["町村役場", "市役所", "警察署", "交番"];
+  PushNodes(chizuNodesList, 11, 1);
+  PushNodes(chizuImiNodesList, 13, 1);
+  PushLinksS1("地図記号", chizuNodesList);
+  PushLinksSTList(chizuNodesList, chizuImiNodesList);
+
+
+  var list = document.getElementById("list");
+  list.innerText = "var graph = "+JSON.stringify(graph);
+
+</script>
+
+</body>
+</html>
