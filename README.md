@@ -1,2 +1,2 @@
-# words-network.github.io
+# words-network
 単語ネットワーク
